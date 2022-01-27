@@ -1,11 +1,12 @@
 from collections import Counter
 from datetime import datetime, timedelta
 from typing import List
+from matplotlib import use
 
 import pandas as pd
 
 from config import TABLE_COLUMNS
-from user import DummyUser, User
+from user import UnmotivatedUser, InactiveUser, LearningUser, SavvyUser, User
 
 
 class Organization:
@@ -22,13 +23,28 @@ class Organization:
         ), "Please create your users as subclasses of the abstract User class."
 
     def _populate_organization(self) -> List:
-        # TODO(Task 2):
-        # 1. import your own user types created in Task 1 from the user.py module
-        # 2. change this to populate the organization with your own user types
-        # 3. change the distribution from uniform to something a bit more realistic
         users = []
-        for i in range(self.n_users):
-            users.append(DummyUser())
+        # Approximate distribution of user types:
+        #  3%:  Inactive
+        r1 = self.n_users * 3 // 100
+        for i in range(r1):
+            users.append(InactiveUser())
+
+        # 15%:  Unmotivated
+        r2 = self.n_users * 15 // 100
+        for i in range(r2):
+            users.append(UnmotivatedUser())
+
+        # 10%:  Savvy
+        r3 = self.n_users * 10 // 100
+        for i in range(r3):
+            users.append(SavvyUser())
+
+        # 72%:  Learning
+        r4 = self.n_users - (r1 + r2 + r3)
+        for i in range(r4):
+            users.append(LearningUser())
+
         return users
 
     def do_training(self) -> None:
