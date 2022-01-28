@@ -29,28 +29,35 @@ def get_data_with_query() -> pd.DataFrame:
     )
     query_db_to_df(query_params, result_columns=TABLE_COLUMNS)
     """
-    # TODO(Task 3):
-    # Write a SQL query that aggregates the simulated data to a format that you want to visualize
-    # To do this, you will use a Jinja template that compiles a query from a set of given arguments
-    # You are allowed to write multiple queries if you wish to visualize multiple things.
-    # EXAMPLE: Get number of fails per user.
+    # Select proportion of misses, fails and successes each day, order
+    # dates in an ascending order. (Though the organization size seems
+    # to be 100 in this case so instead of calculating percentages
+    # the inner query would have sufficed. This should however work
+    # in general as well if the organization size changes)
     query_params = QueryParams(
-        dimensions=[
-            "user_id",
-            "name",
-            "type",
-            "COUNT(CASE WHEN outcome = 'FAIL' THEN 1 END) AS fails",
+        dimensions = [
+            "timestamp",
+            "fail * 100.0 / (fail + success + miss) AS f_pct",
+            "miss * 100.0 / (fail + success + miss) AS m_pct",
+            "success * 100.0 / (fail + success + miss) AS f_pct",
         ],
-        table=DEFAULT_TABLE,
-        group_by=["user_id"],
-        order_by=["fails DESC"],
+        # Doing the inner query this way may be kind of janky and
+        # same result could be achieved by manipulating the data frame
+        # given by the inner query. However, I wanted to do the data
+        # processing on the database side as much as possible +
+        # didn't want to alter the querying code to keep things clear
+        table = "(SELECT timestamp, "
+                "COUNT(CASE WHEN outcome = 'FAIL' THEN 1 END) AS fail, "
+                "COUNT(CASE WHEN outcome = 'SUCCESS' THEN 1 END) AS success, "
+                "COUNT(CASE WHEN outcome = 'MISS' THEN 1 END) AS miss\n"
+                f"FROM {DEFAULT_TABLE}\n"
+                "GROUP BY timestamp\n"
+                "ORDER BY timestamp ASC) InnerQuery",
+        group_by = ["timestamp"],
+        order_by = ["timestamp ASC"],
     )
-    # The function call above will result in the following query:
-    # SELECT user_id, name, type, COUNT(CASE WHEN outcome = 'FAIL' THEN 1 END) AS fails
-    # FROM training_result
-    # GROUP BY user_id
-    # ORDER BY fails DESC
-    return query_db_to_df(query_params, result_columns=["user_id", "name", "type", "fails"])
+
+    return query_db_to_df(query_params, result_columns=["timestamp", "Fail", "Miss", "Success"])
 
 
 def main() -> None:
