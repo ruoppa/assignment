@@ -97,7 +97,7 @@ class UnmotivatedUser(User):
     def __init__(self) -> None:
         # Random initial fail rate between 5-15% from uniform distribution
         init_fail = round(random.uniform(0.05, 0.15), 3)
-        init_miss = 1 - init_fail
+        init_miss = round(1 - init_fail, 3)
         super(UnmotivatedUser, self).__init__(success = 0, miss = init_miss, fail = init_fail, type = "Unmotivated")
 
     def _get_simulation_outcome(self) -> str:
@@ -105,11 +105,11 @@ class UnmotivatedUser(User):
         # If outcome is fail, success rate rises to ~0.2 * miss rate
         if outcome == "FAIL":
             self.success = round(self.miss * 0.2, 3)
-            self.miss = 1 - self.success - self.fail
+            self.miss = round(1 - self.success - self.fail, 3)
         # Success rate decays fast linearly with each success
         elif outcome == "SUCCESS":
             self.success = max(self.success - 0.04, 0)
-            self.miss = 1 - self.success - self.fail
+            self.miss = round(1 - self.success - self.fail, 3)
         return outcome
 
 # Inactive user that e.g. is no longer with the organization, but
@@ -144,7 +144,7 @@ class LearningUser(User):
         # Initial fail rate between 5-20%
         init_fail = round(random.uniform(0.05, 0.20), 3)
         # Rest are successes
-        init_success = 1 - init_miss - init_fail
+        init_success = round(1 - init_miss - init_fail, 3)
         super(LearningUser, self).__init__(success = init_success, miss = init_miss, fail = init_fail, type = "Learning")
 
     def _get_simulation_outcome(self) -> str:
@@ -154,11 +154,13 @@ class LearningUser(User):
         # If outcome is fail or miss, learning happens
         if outcome == "FAIL" or outcome == "MISS":
             # If outcome is miss, less learning
-            multiplier = 0.5 if outcome == "FAIL" else 0.3
-            learning = multiplier * (math.exp(-3 - self.knowledge) + 0.005)
-            self.miss = round(max(self.miss - learning, 0), 3)
-            self.fail = round(max(self.fail - learning, 0), 3)
-            self.success = 1 - self.miss - self.fail
+            multiplier = 1 if outcome == "FAIL" else 0.6
+            # Learning slows down as knowledge is accumulated
+            learning = multiplier * (0.01 - min(self.knowledge * 0.00001, 0.009)) 
+            # The effect of learning is stronger on missing
+            self.miss = round(max(self.miss - 2 * learning, 0), 3)
+            self.fail = round(max(self.fail - 0.6 * learning, 0), 3)
+            self.success = round(1 - self.miss - self.fail, 3)
             # Knowledge increases with each learning experience
             self.knowledge += 1
 
@@ -173,7 +175,7 @@ class SavvyUser(User):
         init_miss = round(random.uniform(0.05, 0.30), 3)
         # Fail rate between 0 and 1/6 of miss rate
         init_fail = round(random.uniform(0, init_miss / 6), 3)
-        init_success = 1 - init_fail - init_miss
+        init_success = round(1 - init_fail - init_miss, 3)
         # Parameter to store normal rates
         self.init_success = init_success
         self.init_fail = init_fail
@@ -187,7 +189,7 @@ class SavvyUser(User):
         if outcome == "FAIL":
             self.success += round((self.miss / 2 + self.fail / 2), 3)
             self.miss = round(self.miss / 2, 3)
-            self.fail = 1 - self.success - self.miss
+            self.fail = round(1 - self.success - self.miss, 3)
         # Raised success rate decays back to normal linearly
         elif self.init_success < self.success:
             self.success = max(self.success - 0.02, self.init_success)
@@ -196,7 +198,7 @@ class SavvyUser(User):
                 self.miss = self.init_miss
                 self.fail = self.init_fail
             else:
-                self.miss += 0.01
-                self.fail = 1 - self.miss - self.success
+                self.miss = round(self.miss + 0.01, 3)
+                self.fail = round(1 - self.miss - self.success, 3)
 
         return outcome
