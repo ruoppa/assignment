@@ -145,7 +145,7 @@ class LearningUser(User):
         init_fail = round(random.uniform(0.05, 0.20), 3)
         # Rest are successes
         init_success = 1 - init_miss - init_fail
-        super(LearningUser, self).__init__(sucess = init_success, miss = init_miss, fail = init_fail, type = "Learning")
+        super(LearningUser, self).__init__(success = init_success, miss = init_miss, fail = init_fail, type = "Learning")
 
     def _get_simulation_outcome(self) -> str:
         # Possible amount of learning depends on the amount of learning
@@ -178,7 +178,7 @@ class SavvyUser(User):
         self.init_success = init_success
         self.init_fail = init_fail
         self.init_miss = init_miss
-        super(SavvyUser, self).__init__(successs = init_success, miss = init_miss, fail = init_fail, type = "Savvy")
+        super(SavvyUser, self).__init__(success = init_success, miss = init_miss, fail = init_fail, type = "Savvy")
 
     def _get_simulation_outcome(self) -> str:
         outcome = self._outcome_helper()
