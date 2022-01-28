@@ -159,7 +159,7 @@ class LearningUser(User):
             learning = multiplier * (0.01 - min(self.knowledge * 0.00001, 0.009)) 
             # The effect of learning is stronger on missing
             self.miss = round(max(self.miss - 2 * learning, 0), 3)
-            self.fail = round(max(self.fail - 0.6 * learning, 0), 3)
+            self.fail = round(max(self.fail - learning, 0), 3)
             self.success = round(1 - self.miss - self.fail, 3)
             # Knowledge increases with each learning experience
             self.knowledge += 1
