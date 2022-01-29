@@ -98,7 +98,10 @@ class UnmotivatedUser(User):
         # Random initial fail rate between 5-15% from uniform distribution
         init_fail = round(random.uniform(0.05, 0.15), 3)
         init_miss = round(1 - init_fail, 3)
-        super(UnmotivatedUser, self).__init__(success = 0, miss = init_miss, fail = init_fail, type = "Unmotivated")
+        super(UnmotivatedUser, self).__init__(
+            success = 0, miss = init_miss,
+            fail = init_fail, type = "Unmotivated"
+        )
 
     def _get_simulation_outcome(self) -> str:
         outcome = self._outcome_helper()
@@ -118,7 +121,9 @@ class UnmotivatedUser(User):
 class InactiveUser(User):
 
     def __init__(self) -> None:
-        super(InactiveUser, self).__init__(success = 0, miss = 1, fail = 0, type = "Inactive")
+        super(InactiveUser, self).__init__(
+            success = 0, miss = 1, fail = 0, type = "Inactive"
+        )
 
     def _get_simulation_outcome(self) -> str:
         # Outcome is always a miss
@@ -145,7 +150,10 @@ class LearningUser(User):
         init_fail = round(random.uniform(0.05, 0.20), 3)
         # Rest are successes
         init_success = round(1 - init_miss - init_fail, 3)
-        super(LearningUser, self).__init__(success = init_success, miss = init_miss, fail = init_fail, type = "Learning")
+        super(LearningUser, self).__init__(
+            success = init_success, miss = init_miss,
+            fail = init_fail, type = "Learning"
+        )
 
     def _get_simulation_outcome(self) -> str:
         # Possible amount of learning depends on the amount of learning
@@ -156,7 +164,8 @@ class LearningUser(User):
             # If outcome is miss, less learning
             multiplier = 1 if outcome == "FAIL" else 0.6
             # Learning slows down as knowledge is accumulated
-            learning = multiplier * (0.01 - min(self.knowledge * 0.00001, 0.009)) 
+            learning = multiplier * (
+                0.01 - min(self.knowledge * 0.00001, 0.009)) 
             # The effect of learning is stronger on missing
             self.miss = round(max(self.miss - 2 * learning, 0), 3)
             self.fail = round(max(self.fail - learning, 0), 3)
@@ -180,7 +189,10 @@ class SavvyUser(User):
         self.init_success = init_success
         self.init_fail = init_fail
         self.init_miss = init_miss
-        super(SavvyUser, self).__init__(success = init_success, miss = init_miss, fail = init_fail, type = "Savvy")
+        super(SavvyUser, self).__init__(
+            success = init_success, miss = init_miss,
+            fail = init_fail, type = "Savvy"
+        )
 
     def _get_simulation_outcome(self) -> str:
         outcome = self._outcome_helper()
